@@ -1,7 +1,11 @@
 from email.parser import Parser
-from sys import stdin
-from json import dumps
 from hashlib import sha256
+import couchdb
+import json
+import sys
+
+if len(sys.argv) < 3:
+	sys.exit()
 
 def handle_part(part):
 	headers = {}
@@ -24,7 +28,10 @@ def handle_part(part):
 		part_obj['content'] = 'http://localhost/~mark/httpmail/' + f
 	return part_obj
 
-m = Parser().parse(stdin)
+s = couchdb.Server(sys.argv[1])
+db = s[sys.argv[2]]
+
+m = Parser().parse(sys.stdin)
 print m.get_unixfrom()
-print dumps(handle_part(m), indent=4)
+db.save(handle_part(m))
 
